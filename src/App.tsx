@@ -11,7 +11,7 @@ import { ProjectionPanel } from './modules/projection'
 import { TestingPanel } from './modules/testing'
 import { SatellitePanel, getSatellitePassSummary } from './modules/satellites'
 import { getDefaultModeState, type SkyMode } from './modules/modeManager'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { getModeConfig } from './modules/modeManager/modeManager'
 
 function App() {  
@@ -29,7 +29,12 @@ function App() {
   const [currentTime, setCurrentTime] = useState(new Date())
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
-  const [locationStatus, setLocationStatus] = useState('Detecting GPS…')
+  const [locationStatus, setLocationStatus] = useState<string>(() => {
+    if (typeof navigator !== 'undefined' && 'geolocation' in navigator) {
+      return 'Detecting GPS…'
+    }
+    return 'GPS unavailable'
+  })
 
   useEffect(() => {
     const timeIntervalId = window.setInterval(() => {
@@ -43,7 +48,7 @@ function App() {
 
   useEffect(() => {
     if (typeof navigator === 'undefined' || !('geolocation' in navigator)) {
-      setLocationStatus('GPS unavailable')
+      requestAnimationFrame(() => setLocationStatus('GPS unavailable'))
       return
     }
 
@@ -53,16 +58,16 @@ function App() {
           ...current,
           location: { latitude: coords.latitude, longitude: coords.longitude },
         }))
-        setLocationStatus('Live GPS')
+        requestAnimationFrame(() => setLocationStatus('Live GPS'))
       },
       () => {
-        setLocationStatus('GPS unavailable')
+        requestAnimationFrame(() => setLocationStatus('GPS unavailable'))
       },
       { enableHighAccuracy: true, timeout: 10_000, maximumAge: 60_000 },
     )
   }, [])
 
-  const refreshLiveData = () => {
+  const refreshLiveData = useCallback(() => {
     setIsRefreshing(true)
 
     void Promise.allSettled([
@@ -85,10 +90,12 @@ function App() {
       setLastUpdated(new Date())
       setIsRefreshing(false)
     })
-  }
+  }, [setupConfig.location])
 
   useEffect(() => {
-    refreshLiveData()
+    requestAnimationFrame(() => {
+      refreshLiveData()
+    })
 
     const intervalId = window.setInterval(refreshLiveData, 5 * 60_000)
 
@@ -100,7 +107,7 @@ function App() {
       window.clearInterval(intervalId)
       window.clearInterval(sensorIntervalId)
     }
-  }, [setupConfig.location])
+  }, [refreshLiveData])
 
   const previousModeRef = useRef<SkyMode>(activeMode)
 
@@ -219,6 +226,10 @@ function App() {
           <div className="topbar__refresh" aria-label="Auto-refresh status">
             <span className="topbar__clock-label">Auto-refresh</span>
             <strong>Every 5 min</strong>
+          </div>
+          <div className="topbar__updated" aria-label="Last updated">
+            <span className="topbar__clock-label">Last updated</span>
+            <strong>{lastUpdated ? lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : 'Never'}</strong>
           </div>
           <div className="topbar__gps" aria-label="GPS status">
             <span className="topbar__clock-label">GPS</span>
