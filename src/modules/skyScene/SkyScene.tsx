@@ -76,10 +76,10 @@ const rainDrops = Array.from({ length: 26 }, (_, index) => ({
 }))
 
 export function SkyScene({
-  title = 'SkyScene',
-  description = 'A living astronomy-inspired view for SkyVerse.',
+  // title = 'SkyScene',
+  // description = 'A living astronomy-inspired view for SkyVerse.',
   activeMode = 'Live View',
-  modeLabel,
+  // modeLabel,
   weatherSummary = 'Weather: stable',
   astronomySummary = 'Astronomy: ready',
   bestTarget = 'Mars',
@@ -89,7 +89,7 @@ export function SkyScene({
   recommendation = 'Live sky conditions will appear here.',
   showOverlays,
   onToggleOverlays,
-  sceneMessage,
+  // sceneMessage,
 }: SkySceneProps) {
   const glow = useMemo(() => ({
     transform: 'translate3d(0, 0, 0)',
@@ -241,17 +241,8 @@ export function SkyScene({
   return (
     <section className="sky-scene" aria-label="SkyScene module">
       <div className="sky-scene__panel">
-        <div className="sky-scene__header">
-          <div>
-            <p className="sky-scene__eyebrow">SkyScene Module</p>
-            <h2>{title}</h2>
-            <p className="sky-scene__mode-label">{modeLabel ?? activeMode}</p>
-          </div>
-          <span className="sky-scene__badge">Astronomy Ready</span>
-        </div>
-
-        <p className="sky-scene__description">{description}</p>
-        {sceneMessage ? <div className="sky-scene__message">{sceneMessage}</div> : null}
+        {/* <p className="sky-scene__description">{description}</p>
+        {sceneMessage ? <div className="sky-scene__message">{sceneMessage}</div> : null} */}
 
         <div ref={canvasContainerRef} className={`sky-scene__canvas sky-scene__canvas--${sceneVariant}`} style={{ ...glow, background: sceneBackground }}>
           <div className={`sky-scene__sun ${isNight ? 'sky-scene__sun--night' : ''} ${isHot ? 'sky-scene__sun--hot' : ''}`} />
@@ -262,8 +253,8 @@ export function SkyScene({
           {isCeilingMode ? <div className="sky-scene__projection-grid" /> : null}
           {moonVisible ? <div className="sky-scene__moon" /> : null}
           <div className="sky-scene__timeline" aria-label="Live sky timeline">
-            <span className="sky-scene__time">{now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-            <span className="sky-scene__phase">{phase}</span>
+            <span className="sky-scene__time">{phase}</span>
+            <span className="sky-scene__phase">{now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
           </div>
           <div className="sky-scene__target-pill">Target: {bestTarget}</div>
           <div className="sky-scene__location-pill">{locationLabel}</div>
